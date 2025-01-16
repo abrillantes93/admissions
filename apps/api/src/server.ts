@@ -2,9 +2,12 @@ import { json, urlencoded } from "body-parser";
 import express, { type Express, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
-import fs from 'fs';
+import fs from 'fs/promises'; // Use fs.promises for async/await
 import path from 'path';
 import axios from "axios";
+// import dotenv from 'dotenv';
+// dotenv.config();
+
 
 interface StudentData {
   name: string;
@@ -17,11 +20,10 @@ interface CollegeData {
   name: string;
   properties: {
     location: string;
-    // programs: string[]; // Array of programs
   }
 }
 
-const apiKey = "CmZ4GmhSXYMPZEJPXxG1jUdX5Gwv4u4zAv67qdgS";  // Your API key
+const apiKey = process.env.API_KEY;  // Your API key
 
 export const createServer = (): Express => {
   const app = express();
@@ -74,15 +76,6 @@ export const createServer = (): Express => {
           );
 
           const colleges = response.data.results;
-          // Defensive check to ensure `school` and `school.name` exist
-          // colleges.forEach((college: any) => {
-          //   if (college.school && college.school.name) {
-          //     console.log(`College: ${college.school.name}`);
-          //     console.log(`Academics: ${college.academics ? college.academics.program_reporter.programs_offered : 'No CIPTITLE1 available'}`);
-          //   } else {
-          //     console.warn("Missing school data for college:", college);
-          //   }
-          // });
 
           allColleges = allColleges.concat(colleges); // Append the current page's data
 
@@ -101,7 +94,7 @@ export const createServer = (): Express => {
         return res.status(500).send("Error fetching colleges data");
       }
     })
-    .get('/match-student', (req, res) => {
+    .get('/match-student', async (req: Request, res: Response) => {
       const { name } = req.query;
 
       if (!name) {
@@ -111,16 +104,10 @@ export const createServer = (): Express => {
       const studentDataFile = path.join(__dirname, 'student-data.json');
       const collegeDataFile = path.join(__dirname, 'college-data.json');
 
-      // Read the student data from the JSON file
-      fs.readFile(studentDataFile, 'utf8', (err, studentData) => {
-        if (err) return res.status(500).send('Error reading student data');
-
-        let students = [];
-        try {
-          students = JSON.parse(studentData);
-        } catch (parseError) {
-          return res.status(500).send('Error parsing student data');
-        }
+      try {
+        // Read student data
+        const studentData = await fs.readFile(studentDataFile, 'utf8');
+        const students: StudentData[] = JSON.parse(studentData);
 
         // Find the student based on the name
         const student = students.find(student => student.name.toLowerCase() === name.toLowerCase());
@@ -129,135 +116,76 @@ export const createServer = (): Express => {
           return res.status(404).send('Student not found');
         }
 
-        // Read the college data from the JSON file
-        fs.readFile(collegeDataFile, 'utf8', (err, collegeData) => {
-          if (err) return res.status(500).send('Error reading college data');
+        // Read college data
+        const collegeData = await fs.readFile(collegeDataFile, 'utf8');
+        const colleges: CollegeData[] = JSON.parse(collegeData);
 
-          let colleges = [];
-          try {
-            colleges = JSON.parse(collegeData);
-          } catch (parseError) {
-            return res.status(500).send('Error parsing college data');
-          }
+        // Match the student with colleges based on location
+        const matchedColleges = colleges.filter(college =>
+          college.properties.location.toLowerCase() === student.preferences.location.toLowerCase()
+        );
 
-          // Match the student with colleges based on location
-          const matchedColleges = colleges.filter(college =>
-            college.properties.location.toLowerCase() === student.preferences.location.toLowerCase()
-          );
+        // Return matched colleges
+        res.json({ student, matchedColleges });
 
-          // Return matched colleges
-          res.json({ student, matchedColleges });
-        });
-      });
+      } catch (error) {
+        console.error("Error reading or parsing files:", error);
+        return res.status(500).send("Error reading or parsing student/college data");
+      }
     })
-    .post('/new-student', (req: Request, res: Response) => {
+    .post('/new-student', async (req: Request, res: Response) => {
       const studentData: StudentData = req.body; // Data sent in body of the request
-
-      // File path for JSON file
       const filePath = path.join(__dirname, 'student-data.json');
 
-      // Read existing data from JSON file
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          console.error('Error reading file:', err);
-          return res.status(500).send('Internal server error');
-        }
-
+      try {
+        // Read existing student data
         let currentData: StudentData[] = [];
-        if (data) {
-          try {
-            currentData = JSON.parse(data); // Parse existing data if available
-          } catch (parseError) {
-            console.error('Error parsing JSON:', parseError);
-            return res.status(500).send('Error parsing stored data');
-          }
+        try {
+          const data = await fs.readFile(filePath, 'utf8');
+          currentData = JSON.parse(data);
+        } catch (err) {
+          if (err.code !== 'ENOENT') throw err; // Only handle file not found error
         }
 
         // Add new student data to array
         currentData.push(studentData);
 
-        // Write updated data back to the file
-        fs.writeFile(filePath, JSON.stringify(currentData, null, 2), (err) => {
-          if (err) {
-            console.error('Error writing to file:', err);
-            return res.status(500).send('Internal server error');
-          }
-          return res.status(200).send('Student record added successfully');
-        });
-      });
+        // Write updated data back to the JSON file
+        await fs.writeFile(filePath, JSON.stringify(currentData, null, 2));
+
+        res.json({ message: 'Student data saved successfully!' });
+
+      } catch (error) {
+        console.error('Error handling student data:', error);
+        return res.status(500).send('Error saving student data');
+      }
     })
-    .post('/submit-student', (req, res) => {
-      const studentData = req.body; // Get the student data from the request body
-      const filePath = path.join(__dirname, 'student-data.json');
-
-      // Read existing data from the JSON file
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        let currentData = [];
-        if (err && err.code !== 'ENOENT') {
-          // If the file does not exist or other error occurs, respond with 500
-          return res.status(500).send('Error reading file');
-        }
-
-        // Parse the existing data if the file exists
-        if (data) {
-          try {
-            currentData = JSON.parse(data);
-          } catch (parseError) {
-            console.error('Error parsing JSON:', parseError);
-            return res.status(500).send('Error parsing stored data');
-          }
-        }
-
-        // Add the new student data to the array
-        currentData.push(studentData);
-
-        // Write the updated data back to the JSON file
-        fs.writeFile(filePath, JSON.stringify(currentData, null, 2), (writeError) => {
-          if (writeError) {
-            console.error('Error writing to file:', writeError);
-            return res.status(500).send('Error writing to file');
-          }
-
-          // Send a response indicating success
-          res.json({ message: 'Student data saved successfully!' });
-        });
-      });
-    })
-    .post('/new-college', (req: Request, res: Response) => {
+    .post('/new-college', async (req: Request, res: Response) => {
       const collegeData: CollegeData = req.body; // Data sent in body of the request
-
-      // File path for JSON file
       const filePath = path.join(__dirname, 'college-data.json');
 
-      // Read existing data from JSON file
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          console.error('Error reading file:', err);
-          return res.status(500).send('Internal server error');
-        }
-
+      try {
+        // Read existing college data
         let currentData: CollegeData[] = [];
-        if (data) {
-          try {
-            currentData = JSON.parse(data); // Parse existing data if available
-          } catch (parseError) {
-            console.error('Error parsing JSON:', parseError);
-            return res.status(500).send('Error parsing stored data');
-          }
+        try {
+          const data = await fs.readFile(filePath, 'utf8');
+          currentData = JSON.parse(data);
+        } catch (err) {
+          if (err.code !== 'ENOENT') throw err; // Only handle file not found error
         }
 
         // Add new college data to array
         currentData.push(collegeData);
 
-        // Write updated data back to the file
-        fs.writeFile(filePath, JSON.stringify(currentData, null, 2), (err) => {
-          if (err) {
-            console.error('Error writing to file:', err);
-            return res.status(500).send('Internal server error');
-          }
-          return res.status(200).send('College record added successfully');
-        });
-      });
+        // Write updated data back to the JSON file
+        await fs.writeFile(filePath, JSON.stringify(currentData, null, 2));
+
+        res.json({ message: 'College data saved successfully!' });
+
+      } catch (error) {
+        console.error('Error handling college data:', error);
+        return res.status(500).send('Error saving college data');
+      }
     });
 
   return app;

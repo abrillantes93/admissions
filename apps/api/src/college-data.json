@@ -1,7 +1,7 @@
 [
   {
     "name": "USF",
-    "preferences": {
+    "properties": {
       "location": "NY",
       "program": [
         "Computer Science",
@@ -11,8 +11,18 @@
   },
   {
     "name": "UF",
-    "preferences": {
+    "properties": {
       "location": "Florida",
+      "program": [
+        "Computer Science",
+        "English"
+      ]
+    }
+  },
+  {
+    "name": "NYC",
+    "properties": {
+      "location": "NY",
       "program": [
         "Computer Science",
         "English"
