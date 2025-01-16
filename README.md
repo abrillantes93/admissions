@@ -73,3 +73,10 @@ This Turborepo has some additional tools already setup for you:
 - [ESLint](https://eslint.org/) for code linting
 - [Jest](https://jestjs.io) test runner for all things JavaScript
 - [Prettier](https://prettier.io) for code formatting
+
+- Run commands with Turborepo:
+   - npm run build: Build all apps and packages
+   - npm run dev: Develop all apps and packages
+   - npm run lint: Lint all apps and packages
+   - npm run test: Test all apps and packages
+- Run a command twice to hit cache

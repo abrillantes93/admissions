@@ -1,0 +1,22 @@
+[
+  {
+    "name": "USF",
+    "preferences": {
+      "location": "NY",
+      "program": [
+        "Computer Science",
+        "English"
+      ]
+    }
+  },
+  {
+    "name": "UF",
+    "preferences": {
+      "location": "Florida",
+      "program": [
+        "Computer Science",
+        "English"
+      ]
+    }
+  }
+]

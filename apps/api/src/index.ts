@@ -7,3 +7,8 @@ const server = createServer();
 server.listen(port, () => {
   log(`api running on ${port}`);
 });
+
+// server.get('/', (req, res) => {
+//   return res.send(
+//     index.html)
+// })

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Anthony ",
+    "preferences": {
+      "location": "NY"
+    }
+  },
+  {
+    "name": "Bob",
+    "preferences": {
+      "location": "NY"
+    }
+  }
+]
