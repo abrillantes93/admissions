@@ -5,6 +5,7 @@ import cors from "cors";
 import fs from 'fs/promises'; // Use fs.promises for async/await
 import path from 'path';
 import axios from "axios";
+
 // import dotenv from 'dotenv';
 // dotenv.config();
 
@@ -24,6 +25,7 @@ interface CollegeData {
 }
 
 const apiKey = process.env.API_KEY;  // Your API key
+const authRoutes = require('./routes/auth');
 
 export const createServer = (): Express => {
   const app = express();
@@ -35,6 +37,7 @@ export const createServer = (): Express => {
     .use(express.json())
     .use(cors())
     .use(express.static(path.join(__dirname, '../public')))
+    .use('/api/auth', authRoutes)
     .get('/', (req, res) => {
       res.sendFile(path.join(__dirname, 'index.html'));
     })
@@ -133,7 +136,7 @@ export const createServer = (): Express => {
         return res.status(500).send("Error reading or parsing student/college data");
       }
     })
-    .post('/new-student', async (req: Request, res: Response) => {
+    .post('/submit-student', async (req: Request, res: Response) => {
       const studentData: StudentData = req.body; // Data sent in body of the request
       const filePath = path.join(__dirname, 'student-data.json');
 

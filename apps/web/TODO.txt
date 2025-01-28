@@ -1,0 +1,5 @@
+dynamic calls to API (pages/api, index?)
+
+AUTH
+
+UI polish

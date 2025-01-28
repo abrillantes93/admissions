@@ -10,5 +10,11 @@
     "preferences": {
       "location": "NY"
     }
+  },
+  {
+    "name": "andrew",
+    "preferences": {
+      "location": "florida"
+    }
   }
 ]
