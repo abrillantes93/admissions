@@ -1,13 +1,13 @@
-// components/Login.tsx
-'use client'
+'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // <-- Import from 'next/navigation' in app directory
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
+    const router = useRouter(); // <-- `useRouter` from 'next/navigation'
 
-    // Handle login
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
 
@@ -20,9 +20,9 @@ const Login = () => {
         const data = await response.json();
 
         if (response.ok) {
-            // Store the token in localStorage or cookies (for session persistence)
             localStorage.setItem('token', data.token);
             setStatusMessage('Login successful!');
+            router.push('/database'); // Redirect to '/' after successful login
         } else {
             setStatusMessage(data.message || 'Login failed');
         }
@@ -68,8 +68,9 @@ const Login = () => {
                 </button>
             </form>
 
-            {/* Status Message */}
-            {statusMessage && <p className="mt-4 text-center text-sm font-semibold">{statusMessage}</p>}
+            {statusMessage && (
+                <p className="mt-4 text-center text-sm font-semibold">{statusMessage}</p>
+            )}
         </div>
     );
 };

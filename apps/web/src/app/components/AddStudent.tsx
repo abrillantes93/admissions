@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
 
-const SubmitStudent = () => {
+const AddStudent = () => {
     const [studentName, setStudentName] = useState('');
     const [studentLocation, setStudentLocation] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
@@ -83,4 +83,4 @@ const SubmitStudent = () => {
     );
 };
 
-export default SubmitStudent;
+export default AddStudent;

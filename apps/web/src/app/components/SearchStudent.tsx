@@ -1,10 +1,19 @@
-'use client'
-import { useState } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter for client-side navigation
 
 const SearchStudent = () => {
+    const router = useRouter();
     const [studentName, setStudentName] = useState('');
     const [matchedColleges, setMatchedColleges] = useState<any[]>([]);
     const [statusMessage, setStatusMessage] = useState('');
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/login');
+        }
+    }, [router]); // Dependency array includes router to re-check on router change
 
     // Handle student search and college match
     const handleSearchStudent = async (event: React.FormEvent) => {
@@ -13,7 +22,12 @@ const SearchStudent = () => {
         // Use the environment variable for the API URL
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-        const response = await fetch(`${apiUrl}/api/match-student?name=${encodeURIComponent(studentName)}`);
+        const response = await fetch(`${apiUrl}/api/match-student?name=${encodeURIComponent(studentName)}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`, // Use the token in the request
+                'Content-Type': 'application/json'
+            }
+        });
         const data = await response.json();
 
         if (response.ok) {
@@ -57,7 +71,7 @@ const SearchStudent = () => {
                 {matchedColleges.length > 0 ? (
                     matchedColleges.map((college: any, index: number) => (
                         <li key={index} className="py-2 border-b border-gray-200">
-                            {college.name} ({college.properties.location})
+                            {college.name} ({college.properties ? college.properties.location : 'No location specified'})
                         </li>
                     ))
                 ) : (

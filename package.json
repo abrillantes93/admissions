@@ -15,7 +15,7 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2",
-    "next": "^15.2.0-canary.25"
+    "next": "^15.1.6"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

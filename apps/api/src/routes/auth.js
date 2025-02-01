@@ -1,4 +1,5 @@
 // backend/routes/auth.js
+//NOT IMPLEMENTED - ROUTING ISSUE 
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -6,25 +7,31 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 // In-memory users (replace this with a real database in production)
-const users = [
+let users = [
     { id: 1, username: 'testuser', password: '$2a$10$...' }, // hashed password
 ];
 
 // Secret key for JWT signing
 const SECRET_KEY = 'your-secret-key'; // Store in environment variable in production
-
+console.log("Setting up /register route");
 // Register user (for demo purposes, you might want to implement more validation)
 router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
+    console.log("Register endpoint hit");
+    try {
+        const { username, password } = req.body;
 
-    // Hash the password before saving it (use a real database in production)
-    const hashedPassword = await bcrypt.hash(password, 10);
+        // Hash the password before saving it (use a real database in production)
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = { id: Date.now(), username, password: hashedPassword };
-    users.push(newUser);
+        const newUser = { id: Date.now(), username, password: hashedPassword };
+        users.push(newUser);
 
-    res.status(201).json({ message: 'User registered successfully' });
-});
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+})
 
 // Login user
 router.post('/login', async (req, res) => {

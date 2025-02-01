@@ -5,10 +5,8 @@ import cors from "cors";
 import fs from 'fs/promises'; // Use fs.promises for async/await
 import path from 'path';
 import axios from "axios";
-
-// import dotenv from 'dotenv';
-// dotenv.config();
-
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 interface StudentData {
   name: string;
@@ -27,6 +25,13 @@ interface CollegeData {
 const apiKey = process.env.API_KEY;  // Your API key
 const authRoutes = require('./routes/auth');
 
+let users = [
+  { id: 1, username: 'testuser', password: '$2a$10$...' }, // hashed password
+];
+
+const SECRET_KEY = 'your-secret-key';
+
+
 export const createServer = (): Express => {
   const app = express();
 
@@ -35,9 +40,12 @@ export const createServer = (): Express => {
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
     .use(express.json())
-    .use(cors())
+    .use(cors({
+      origin: 'http://localhost:3000', // Adjust according to your frontend server
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      credentials: true, // Allow cookies to be sent across origins if using cookies
+    }))
     .use(express.static(path.join(__dirname, '../public')))
-    .use('/api/auth', authRoutes)
     .get('/', (req, res) => {
       res.sendFile(path.join(__dirname, 'index.html'));
     })
@@ -162,6 +170,51 @@ export const createServer = (): Express => {
         console.error('Error handling student data:', error);
         return res.status(500).send('Error saving student data');
       }
+    })
+    .post('/api/register', async (req: Request, res: Response) => { //move to 
+      console.log("Register endpoint hit");
+      try {
+        const { username, password } = req.body;
+
+        // Check if the username already exists
+        const existingUser = users.find(user => user.username === username);
+        if (existingUser) {
+          return res.status(409).send({ message: 'Username already exists' });
+        }
+
+        // Hash the password before saving it
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = { id: Date.now(), username, password: hashedPassword };
+        users.push(newUser);
+
+        // Generate a JWT token
+        const token = jwt.sign({ userId: newUser.id, username: newUser.username }, SECRET_KEY, { expiresIn: '1h' });
+
+        res.status(201).json({ token, message: 'User registered successfully' });
+      } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+      }
+    })
+    .post('/api/auth/login', async (req: Request, res: Response) => {
+      const { username, password } = req.body;
+
+      // Find the user by username
+      const user = users.find((u) => u.username === username);
+      if (!user) {
+        return res.status(400).json({ message: 'Invalid username or password' });
+      }
+
+      // Compare the provided password with the stored hashed password
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return res.status(400).json({ message: 'Invalid username or password' });
+      }
+
+      // Generate a JWT token
+      const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+
+      res.status(200).json({ token });
     })
     .post('/new-college', async (req: Request, res: Response) => {
       const collegeData: CollegeData = req.body; // Data sent in body of the request
