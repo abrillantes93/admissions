@@ -1,24 +1,14 @@
-dynamic calls to API (pages/api, index?)
 
-redirect after register
-
-Landing page
-    display students and colleges dyanmically 
-Login confirmation
+Login confirmation ('hello, user')
 
 UI polish
-
+    move lists next to each other
 
 
 // Add Components
-LoginForm
-RegisterForm
-AddStudentForm
 
-StudentComponent
-CollegeComponent
 
-StudentListComponent
-CollegeListComponent
+StudentComponent - new feature
+CollegeComponent - new feature
 
 MatchStudentFormComponent

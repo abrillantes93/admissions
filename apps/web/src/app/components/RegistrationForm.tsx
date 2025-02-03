@@ -1,12 +1,13 @@
 'use client'; // Ensures the component is rendered client-side
 
 import { useState } from 'react';
-// import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 const RegisterForm = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
+    const router = useRouter();
     // const router = useRouter(); // For redirecting after successful registration
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const handleRegister = async (event: React.FormEvent) => {
@@ -24,9 +25,7 @@ const RegisterForm = () => {
             localStorage.setItem('token', data.token);
             setStatusMessage('Registration successful! Redirecting to login...');
 
-            // setTimeout(() => {
-            //     router.push('/login'); // Redirect to login after 2 seconds
-            // }, 2000);
+            router.push('/matechecker'); // Red
         } else {
             setStatusMessage(data.message || 'Registration failed');
         }

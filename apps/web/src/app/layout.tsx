@@ -1,27 +1,27 @@
+
+import { Inter } from 'next/font/google';
+import ClientLayout from './components/ClientLayout' // <-- Import your client layout
+
+const inter = Inter({ subsets: ['latin'] });
+
 export const metadata = {
-  title: 'Matechecker',
-  description: 'Tinder for highschool and colleges',
-}
+  title: 'My App',
+  description: 'An example Next.js app',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  // const router = useRouter();
-  // useEffect(() => {
-  //   const token = localStorage.getItem('token');
-  //   if (!token) {
-  //     router.push('/login');
-  //   }
-  // }, [router]); // Dependency array includes router to re-check on router change
-
   return (
     <html lang="en">
-      <body>
-
-        {children}
+      <body className={inter.className}>
+        {/* Wrap everything in the client layout */}
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
-  )
+  );
 }
