@@ -1,9 +1,11 @@
-'use client'
+'use client';
 
+import { useState, useEffect, useCallback } from 'react';
+import Navbar from '../components/Nav';
 import MatchStudent from '../components/MatchStudentForm';
 import AddStudent from '../components/AddStudent';
-import Navbar from '../components/Nav';
-import { useState, useEffect, useCallback } from 'react';
+import StudentList from '../components/StudentList';
+import CollegeList from '../components/CollegeList';
 
 interface Student {
     name: string;
@@ -18,23 +20,19 @@ interface College {
 const Matechecker = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [colleges, setColleges] = useState<College[]>([]);
-
-    // Separate loading states
     const [isLoadingStudents, setLoadingStudents] = useState(true);
     const [isLoadingColleges, setLoadingColleges] = useState(true);
-
-    // For error messages (optional)
     const [error, setError] = useState<string>('');
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL; // Ensure this is correctly set in your .env file
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-    // 1. Define a function to fetch students
+    // Fetch students
     const fetchStudents = useCallback(async () => {
         try {
             setLoadingStudents(true);
             const response = await fetch(`${apiUrl}/students`);
             if (!response.ok) {
-                throw new Error('Failed to fetch students.');
+                throw new Error('Failed to fetch students');
             }
             const data = await response.json();
             setStudents(data);
@@ -46,13 +44,13 @@ const Matechecker = () => {
         }
     }, [apiUrl]);
 
-    // 2. Define a function to fetch colleges
+    // Fetch colleges
     const fetchColleges = useCallback(async () => {
         try {
             setLoadingColleges(true);
             const response = await fetch(`${apiUrl}/colleges`);
             if (!response.ok) {
-                throw new Error('Failed to fetch colleges.');
+                throw new Error('Failed to fetch colleges');
             }
             const data = await response.json();
             setColleges(data);
@@ -64,13 +62,13 @@ const Matechecker = () => {
         }
     }, [apiUrl]);
 
-    // Fetch both students and colleges on component mount
+    // Run both fetch operations on component mount
     useEffect(() => {
         fetchStudents();
         fetchColleges();
     }, [fetchStudents, fetchColleges]);
 
-    // If either is still loading, show a loading screen
+    // Show loading indicators if data is still being fetched
     if (isLoadingStudents || isLoadingColleges) {
         return (
             <div>
@@ -87,45 +85,18 @@ const Matechecker = () => {
             <h1>Student Data Management</h1>
             <Navbar />
 
-            {/* Display any error messages */}
             {error && <p className="text-red-500">{error}</p>}
 
-            <h2>Students</h2>
-            <ul className="mt-2">
-                {students.length > 0 ? (
-                    students.map((student, index) => (
-                        <li key={index} className="py-2 border-b border-gray-200">
-                            {student.name} (
-                            {student.preferences.location || 'No location specified'})
-                        </li>
-                    ))
-                ) : (
-                    <li>No students found</li>
-                )}
-            </ul>
+            {/* StudentList Component */}
+            <StudentList students={students} />
 
-            <h2>Colleges</h2>
-            <ul className="mt-2">
-                {colleges.length > 0 ? (
-                    colleges.map((college, index) => (
-                        <li key={index} className="py-2 border-b border-gray-200">
-                            {college.name} (
-                            {college.properties.location || 'No location specified'})
-                        </li>
-                    ))
-                ) : (
-                    <li>No colleges found</li>
-                )}
-            </ul>
+            {/* CollegeList Component */}
+            <CollegeList colleges={colleges} />
 
-            {/* 
-        Pass `fetchStudents` to AddStudent so that after adding 
-        a student, you can re-fetch (update) the student list.
-      */}
+            {/* Add a new student (re-fetch after successful add) */}
             <AddStudent onStudentAdded={fetchStudents} />
 
-            {/* If your MatchStudent component needs data or 
-          a callback, you can pass it in here as props */}
+            {/* Match a student to a college */}
             <MatchStudent />
         </div>
     );

@@ -4,9 +4,7 @@ import React from 'react';
 
 interface Student {
     name: string;
-    preferences: {
-        location: string;
-    };
+    preferences: { location: string };
 }
 
 interface StudentListProps {
@@ -14,18 +12,23 @@ interface StudentListProps {
 }
 
 const StudentList: React.FC<StudentListProps> = ({ students }) => {
-    if (!students || students.length === 0) {
-        return <p>No students found</p>;
-    }
-
     return (
-        <ul className="mt-2">
-            {students.map((student, index) => (
-                <li key={index} className="py-2 border-b border-gray-200">
-                    {student.name} ({student.preferences.location || 'No location specified'})
-                </li>
-            ))}
-        </ul>
+        <>
+            <h2>Students</h2>
+            <ul className="mt-2">
+                {students.length > 0 ? (
+                    students.map((student, index) => (
+                        <li key={index} className="py-2 border-b border-gray-200">
+                            {student.name} (
+                            {student.preferences.location || 'No location specified'}
+                            )
+                        </li>
+                    ))
+                ) : (
+                    <li>No students found</li>
+                )}
+            </ul>
+        </>
     );
 };
 
