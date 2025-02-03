@@ -40,22 +40,43 @@ export const createServer = (): Express => {
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
     .use(express.json())
-    .use(cors({
-      origin: 'http://localhost:3000', // Adjust according to your frontend server
-      methods: ['GET', 'POST', 'PUT', 'DELETE'],
-      credentials: true, // Allow cookies to be sent across origins if using cookies
-    }))
+    .use(cors())
     .use(express.static(path.join(__dirname, '../public')))
     .get('/', (req, res) => {
       res.sendFile(path.join(__dirname, 'index.html'));
     })
-    .get("/message/:name", (req, res) => {
+
+    // health check
+    .get("/api/message/:name", (req, res) => {
       return res.json({ message: `Hello ${req.params.name}` });
     })
-    .get("/status", (_, res) => {
+    .get("/api/status", (_, res) => {
       return res.json({ ok: true });
     })
-    .get('/colleges', async (req: Request, res: Response) => {
+
+    // College
+    .get('/api/colleges', async (req: Request, res: Response) => {
+      const collegeDataFile = path.join(__dirname, 'college-data.json');
+
+      try {
+        // Read student data
+        const collegeData = await fs.readFile(collegeDataFile, 'utf8');
+        const colleges: CollegeData[] = JSON.parse(collegeData);
+
+        // Send the array of students directly
+        res.json(colleges);
+      } catch (error) {
+        console.error("Error accessing college data:", error);
+        if (error.code === 'ENOENT') {
+          // If the file does not exist
+          return res.status(404).send('College data file not found.');
+        } else {
+          // For JSON parsing errors or any other issues
+          return res.status(500).send('Error reading or parsing college data');
+        }
+      }
+    })
+    .get('/api/colleges-search', async (req: Request, res: Response) => {
       const { state, city } = req.query; // Extract state and city from query parameters
 
       if (!state) {
@@ -105,7 +126,35 @@ export const createServer = (): Express => {
         return res.status(500).send("Error fetching colleges data");
       }
     })
-    .get('/match-student', async (req: Request, res: Response) => {
+    .post('/new-college', async (req: Request, res: Response) => {
+      const collegeData: CollegeData = req.body; // Data sent in body of the request
+      const filePath = path.join(__dirname, 'college-data.json');
+
+      try {
+        // Read existing college data
+        let currentData: CollegeData[] = [];
+        try {
+          const data = await fs.readFile(filePath, 'utf8');
+          currentData = JSON.parse(data);
+        } catch (err) {
+          if (err.code !== 'ENOENT') throw err; // Only handle file not found error
+        }
+
+        // Add new college data to array
+        currentData.push(collegeData);
+
+        // Write updated data back to the JSON file
+        await fs.writeFile(filePath, JSON.stringify(currentData, null, 2));
+
+        res.json({ message: 'College data saved successfully!' });
+
+      } catch (error) {
+        console.error('Error handling college data:', error);
+        return res.status(500).send('Error saving college data');
+      }
+    })
+    //Student
+    .get('/api/match-student', async (req: Request, res: Response) => {
       const { name } = req.query;
 
       if (!name) {
@@ -144,7 +193,30 @@ export const createServer = (): Express => {
         return res.status(500).send("Error reading or parsing student/college data");
       }
     })
-    .post('/submit-student', async (req: Request, res: Response) => {
+    .get('/api/students', async (req: Request, res: Response) => {
+      const studentDataFile = path.join(__dirname, 'student-data.json');
+
+      try {
+        // Read student data
+        const studentData = await fs.readFile(studentDataFile, 'utf8');
+        const students: StudentData[] = JSON.parse(studentData);
+
+        // Send the array of students directly
+        res.json(students);
+      } catch (error) {
+        console.error("Error accessing student data:", error);
+        if (error.code === 'ENOENT') {
+          // If the file does not exist
+          return res.status(404).send('Student data file not found.');
+        } else {
+          // For JSON parsing errors or any other issues
+          return res.status(500).send('Error reading or parsing student data');
+        }
+      }
+    })
+
+    .post('/api/add-student', async (req: Request, res: Response) => {
+      console.log("Hit the /add-student endpoint");
       const studentData: StudentData = req.body; // Data sent in body of the request
       const filePath = path.join(__dirname, 'student-data.json');
 
@@ -171,6 +243,8 @@ export const createServer = (): Express => {
         return res.status(500).send('Error saving student data');
       }
     })
+
+    // Auth
     .post('/api/register', async (req: Request, res: Response) => { //move to 
       console.log("Register endpoint hit");
       try {
@@ -215,34 +289,6 @@ export const createServer = (): Express => {
       const token = jwt.sign({ userId: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
 
       res.status(200).json({ token });
-    })
-    .post('/new-college', async (req: Request, res: Response) => {
-      const collegeData: CollegeData = req.body; // Data sent in body of the request
-      const filePath = path.join(__dirname, 'college-data.json');
-
-      try {
-        // Read existing college data
-        let currentData: CollegeData[] = [];
-        try {
-          const data = await fs.readFile(filePath, 'utf8');
-          currentData = JSON.parse(data);
-        } catch (err) {
-          if (err.code !== 'ENOENT') throw err; // Only handle file not found error
-        }
-
-        // Add new college data to array
-        currentData.push(collegeData);
-
-        // Write updated data back to the JSON file
-        await fs.writeFile(filePath, JSON.stringify(currentData, null, 2));
-
-        res.json({ message: 'College data saved successfully!' });
-
-      } catch (error) {
-        console.error('Error handling college data:', error);
-        return res.status(500).send('Error saving college data');
-      }
     });
-
   return app;
 };

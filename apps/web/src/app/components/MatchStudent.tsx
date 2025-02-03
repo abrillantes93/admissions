@@ -1,28 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter for client-side navigation
 
-const SearchStudent = () => {
-    const router = useRouter();
+const MatchStudent = () => {
     const [studentName, setStudentName] = useState('');
     const [matchedColleges, setMatchedColleges] = useState<any[]>([]);
     const [statusMessage, setStatusMessage] = useState('');
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/login');
-        }
-    }, [router]); // Dependency array includes router to re-check on router change
 
     // Handle student search and college match
-    const handleSearchStudent = async (event: React.FormEvent) => {
+    const handleMatchStudent = async (event: React.FormEvent) => {
         event.preventDefault();
 
         // Use the environment variable for the API URL
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-        const response = await fetch(`${apiUrl}/api/match-student?name=${encodeURIComponent(studentName)}`, {
+        const response = await fetch(`${apiUrl}/match-student?name=${encodeURIComponent(studentName)}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`, // Use the token in the request
                 'Content-Type': 'application/json'
@@ -41,7 +33,7 @@ const SearchStudent = () => {
         <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
             <h2 className="text-2xl font-semibold text-center mb-6">Search for a Student</h2>
 
-            <form onSubmit={handleSearchStudent}>
+            <form onSubmit={handleMatchStudent}>
                 <div className="mb-4">
                     <label htmlFor="studentName" className="block text-sm font-medium text-gray-700">
                         Enter Student Name
@@ -87,4 +79,4 @@ const SearchStudent = () => {
     );
 };
 
-export default SearchStudent;
+export default MatchStudent;

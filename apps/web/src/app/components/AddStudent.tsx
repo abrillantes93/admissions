@@ -1,7 +1,11 @@
 'use client'
 import { useState } from 'react';
 
-const AddStudent = () => {
+interface AddStudentProps {
+    onStudentAdded: () => void; // Callback to trigger re-fetch in the parent
+}
+
+const AddStudent: React.FC<AddStudentProps> = ({ onStudentAdded }) => {
     const [studentName, setStudentName] = useState('');
     const [studentLocation, setStudentLocation] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
@@ -15,27 +19,37 @@ const AddStudent = () => {
             preferences: { location: studentLocation },
         };
 
-        // Use the environment variable for the API URL
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-        const response = await fetch(`${apiUrl}/api/submit-student`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(studentData),
-        });
+        try {
+            const response = await fetch(`${apiUrl}/add-student`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(studentData),
+            });
 
-        const data = await response.json();
-        if (response.ok) {
-            setStatusMessage('Student data submitted successfully!');
-        } else {
-            setStatusMessage('Error: ' + data.message);
+            const data = await response.json();
+
+            if (response.ok) {
+                setStatusMessage('Student data submitted successfully!');
+                setStudentName('');
+                setStudentLocation('');
+                // Trigger the parent's fetch
+                onStudentAdded();
+            } else {
+                setStatusMessage('Error: ' + (data.message ?? 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error adding student:', error);
+            setStatusMessage('Error: Could not add student');
         }
     };
 
     return (
         <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
-            <h2 className="text-2xl font-semibold text-center mb-6">Submit Student Data</h2>
-
+            <h2 className="text-2xl font-semibold text-center mb-6">
+                Submit Student Data
+            </h2>
             <form onSubmit={handleSubmitStudent}>
                 <div className="mb-4">
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -75,9 +89,10 @@ const AddStudent = () => {
                 </button>
             </form>
 
-            {/* Status Message */}
             {statusMessage && (
-                <p className="mt-4 text-center text-sm font-semibold text-green-500">{statusMessage}</p>
+                <p className="mt-4 text-center text-sm font-semibold text-green-500">
+                    {statusMessage}
+                </p>
             )}
         </div>
     );

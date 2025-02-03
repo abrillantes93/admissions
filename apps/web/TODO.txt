@@ -1,5 +1,24 @@
 dynamic calls to API (pages/api, index?)
 
-AUTH
+redirect after register
+
+Landing page
+    display students and colleges dyanmically 
+Login confirmation
 
 UI polish
+
+
+
+// Add Components
+LoginForm
+RegisterForm
+AddStudentForm
+
+StudentComponent
+CollegeComponent
+
+StudentListComponent
+CollegeListComponent
+
+MatchStudentFormComponent

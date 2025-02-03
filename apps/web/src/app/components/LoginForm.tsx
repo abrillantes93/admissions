@@ -11,7 +11,7 @@ const Login = () => {
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
@@ -22,7 +22,7 @@ const Login = () => {
         if (response.ok) {
             localStorage.setItem('token', data.token);
             setStatusMessage('Login successful!');
-            router.push('/database'); // Redirect to '/' after successful login
+            router.push('/matechecker'); // Redirect to '/' after successful login
         } else {
             setStatusMessage(data.message || 'Login failed');
         }
