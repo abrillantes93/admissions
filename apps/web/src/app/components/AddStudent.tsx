@@ -13,12 +13,10 @@ const AddStudent: React.FC<AddStudentProps> = ({ onStudentAdded }) => {
     // Handle student data submission
     const handleSubmitStudent = async (event: React.FormEvent) => {
         event.preventDefault();
-
         const studentData = {
             name: studentName,
             preferences: { location: studentLocation },
         };
-
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
         try {
@@ -28,22 +26,19 @@ const AddStudent: React.FC<AddStudentProps> = ({ onStudentAdded }) => {
                 body: JSON.stringify(studentData),
             });
 
-            const data = await response.json();
-
             if (response.ok) {
                 setStatusMessage('Student data submitted successfully!');
-                setStudentName('');
-                setStudentLocation('');
-                // Trigger the parent's fetch
-                onStudentAdded();
+                onStudentAdded();  // Refresh the student list in the parent component
             } else {
-                setStatusMessage('Error: ' + (data.message ?? 'Unknown error'));
+                const data = await response.json();
+                setStatusMessage('Error: ' + data.message);
             }
         } catch (error) {
-            console.error('Error adding student:', error);
-            setStatusMessage('Error: Could not add student');
+            setStatusMessage('Error: Could not connect to the server.');
+            console.error('Error submitting student:', error);
         }
     };
+
 
     return (
         <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">

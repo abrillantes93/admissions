@@ -82,5 +82,29 @@
     "preferences": {
       "location": "ny"
     }
+  },
+  {
+    "name": "louis",
+    "preferences": {
+      "location": "ks"
+    }
+  },
+  {
+    "name": "steven",
+    "preferences": {
+      "location": "ny"
+    }
+  },
+  {
+    "name": "timmy",
+    "preferences": {
+      "location": "NY"
+    }
+  },
+  {
+    "name": "albert",
+    "preferences": {
+      "location": "ny"
+    }
   }
 ]
