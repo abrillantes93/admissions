@@ -31,7 +31,7 @@ const MatchStudent = () => {
 
     return (
         <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
-            <h2 className="text-2xl font-semibold text-center mb-6">Search for a Student</h2>
+            <h2 className="text-2xl font-semibold text-center mb-6">Match Student</h2>
 
             <form onSubmit={handleMatchStudent}>
                 <div className="mb-4">
@@ -53,7 +53,7 @@ const MatchStudent = () => {
                     type="submit"
                     className="w-full py-2 px-4 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
-                    Find Student
+                    Match Student
                 </button>
             </form>
 

@@ -20,6 +20,7 @@ interface College {
 const Matechecker = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [colleges, setColleges] = useState<College[]>([]);
+
     const [isLoadingStudents, setLoadingStudents] = useState(true);
     const [isLoadingColleges, setLoadingColleges] = useState(true);
     const [error, setError] = useState<string>('');
@@ -87,11 +88,19 @@ const Matechecker = () => {
 
             {error && <p className="text-red-500">{error}</p>}
 
-            {/* StudentList Component */}
-            <StudentList students={students} />
+            {/* 
+              Use a flex container (or grid) to place the CollegeList on the left
+              and the StudentList on the right.
+            */}
+            <div className="grid grid-cols-2 gap-8 mt-6">
+                <div>
+                    <CollegeList colleges={colleges} />
+                </div>
+                <div>
+                    <StudentList students={students} />
+                </div>
+            </div>
 
-            {/* CollegeList Component */}
-            <CollegeList colleges={colleges} />
 
             {/* Add a new student (re-fetch after successful add) */}
             <AddStudent onStudentAdded={fetchStudents} />

@@ -3,12 +3,21 @@ Login confirmation ('hello, user')
 
 UI polish
     move lists next to each other
+    basic css
+
+    
 
 
 // Add Components
 
 
-StudentComponent - new feature
-CollegeComponent - new feature
+StudentComponent - new feature - display properties 
+CollegeComponent - new feature - display properties
 
 MatchStudentFormComponent
+
+
+better auth? cookies instead of local storage 
+    prevents any page load before login
+
+
